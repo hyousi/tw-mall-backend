@@ -3,7 +3,6 @@ package com.hyousi.twmallbackend.entity;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -25,7 +24,6 @@ public class CartEntity {
     private int number;
 
     @OneToOne
-    @JoinColumn(name="product_name", referencedColumnName = "name")
     private ProductEntity productEntity;
 
 }

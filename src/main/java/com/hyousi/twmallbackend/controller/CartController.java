@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,11 +32,23 @@ public class CartController {
             return ResponseEntity.badRequest().build();
         } else {
             ProductEntity productEntity = target.get();
-            Optional<CartEntity> item = cartRepository.findByProductEntity_Name(productEntity.getName());
+            Optional<CartEntity> item = cartRepository
+                .findByProductEntity_Name(productEntity.getName());
             CartEntity cartEntity = item
-                .orElseGet(() -> CartEntity.builder().productEntity(productEntity).number(0).build());
+                .orElseGet(
+                    () -> CartEntity.builder().productEntity(productEntity).number(0).build());
             cartEntity.setNumber(cartEntity.getNumber() + 1);
             cartRepository.save(cartEntity);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+    }
+
+    @DeleteMapping("/api/cart")
+    public ResponseEntity removeFromCart(@RequestBody @Valid Product product) {
+        if (!productRepository.findByName(product.getName()).isPresent() || !cartRepository.findByProductEntity_Name(product.getName()).isPresent()) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            cartRepository.deleteByProductEntity_Name(product.getName());
             return ResponseEntity.status(HttpStatus.OK).build();
         }
     }

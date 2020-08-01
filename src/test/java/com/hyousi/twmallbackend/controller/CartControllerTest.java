@@ -1,10 +1,12 @@
 package com.hyousi.twmallbackend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hyousi.twmallbackend.entity.CartEntity;
 import com.hyousi.twmallbackend.entity.ProductEntity;
 import com.hyousi.twmallbackend.repository.CartRepository;
 import com.hyousi.twmallbackend.repository.ProductRepository;
@@ -83,5 +85,25 @@ public class CartControllerTest {
 
         assertEquals(1, cartRepository.findAll().size());
         assertEquals(2, cartRepository.findByProductEntity_Name("芬达").get().getNumber());
+    }
+
+    @Test
+    public void shouldRemoveFromCart() throws Exception {
+        ProductEntity productA = ProductEntity.builder().name("可乐").price(3).unit("瓶")
+            .image("baidu.com").build();
+        ProductEntity productB = ProductEntity.builder().name("雪碧").price(3).unit("瓶")
+            .image("baidu.com").build();
+        productRepository.save(productA);
+        productRepository.save(productB);
+        cartRepository.save(CartEntity.builder().productEntity(productA).number(0).build());
+
+        String requestJson = objectMapper.writeValueAsString(productA.toProduct());
+
+        mockMvc.perform(delete("/api/cart")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isOk());
+
+        assertEquals( 0,  cartRepository.count());
     }
 }
