@@ -1,37 +1,31 @@
 package com.hyousi.twmallbackend.entity;
 
-import com.hyousi.twmallbackend.domain.Product;
-import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
-@Table(name = "product")
+@Table(name = "cart")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductEntity implements Serializable {
+public class CartEntity {
     @Id
     @GeneratedValue
     private int id;
 
-    private String name;
+    private int number;
 
-    private float price;
+    @OneToOne
+    @JoinColumn(name="product_name", referencedColumnName = "name")
+    private ProductEntity productEntity;
 
-    private String unit;
-
-    private String image;
-
-    public Product toProduct() {
-        return new Product(name, price, unit, image);
-    }
 }
