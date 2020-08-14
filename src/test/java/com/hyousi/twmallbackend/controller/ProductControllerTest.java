@@ -3,7 +3,9 @@ package com.hyousi.twmallbackend.controller;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hyousi.twmallbackend.entity.ProductEntity;
@@ -48,7 +50,45 @@ public class ProductControllerTest {
             .andExpect(jsonPath("$", hasSize(3)))
             .andExpect(jsonPath("$[0].name", is("可乐")))
             .andExpect(jsonPath("$[1].name", is("雪碧")))
-            .andExpect(jsonPath("$[2].name", is("芬达")));
+            .andExpect(jsonPath("$[2].name", is("芬达")))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void shouldAddValidProduct() throws Exception {
+        String productJson = "{ \"name\": \"百事可乐\", \"price\": 3, \"unit\": \"瓶\", \"image\": \"www.baidu.com\"}";
+
+        mockMvc.perform(post("/api/products")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(productJson))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/products").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void shouldNotAddProduct() throws Exception {
+        String productJson = "{ \"names\": \"百事可乐\", \"price\": null, \"unit\": \"瓶\", \"image\": \"www.baidu.com\"}";
+
+        mockMvc.perform(post("/api/products")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(productJson))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void shouldNotAddExistedProduct() throws Exception {
+        ProductEntity productA = ProductEntity.builder().name("可乐").price(3).unit("瓶")
+            .image("baidu.com").build();
+        productRepository.save(productA);
+        String productJson = objectMapper.writeValueAsString(productA.toProduct());
+
+        mockMvc.perform(post("/api/products")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(productJson))
+            .andExpect(status().isBadRequest());
     }
 
 }
